@@ -5,5 +5,6 @@
 
     class InsufficientArgumentException extends Exception { }
     class UnsupportedRequestTypeException extends Exception { }
+    class GidFileProcessingException extends Exception { }
     
 ?>

@@ -86,10 +86,10 @@
                     case TELL_ACTIVE:
                         return sendData(getResponse(tellActive()));
                         break;
-
-                    case DOWNLOAD_LOG:
-                        return downloadFile("aria2c.log", "text/plain");
-                        break;
+                    case TELL_WAITING:
+                        return sendData(getResponse(tellWaiting()));
+                    case TELL_STATUS:
+                        return sendData(getResponse(tellStatus()));
 
                     default:
                         throw new UnsupportedRequestTypeException("Request type '$requestType' is not supported");
@@ -135,8 +135,16 @@
             case "WIN32":
             case "WINNT":
             case "Windows":
+                            //create a gid if not exists
+                            if(file_exists(GID_FILE)) {
+                                unlink(GID_FILE);
+                            }
+                            if(!touch(GID_FILE)) {
+                                throw new GidFileProcessingException("Error in creating file " . GID_FILE);
+                            }
+
                             //start script for windows
-                            $handle = popen("START /B aria2c.exe --enable-rpc --rpc-listen-all --max-connection-per-server=1 --log=aria2c.log >NUL 2>&1", "r");
+                            $handle = popen("START /B aria2c.exe --enable-rpc --rpc-listen-all --max-connection-per-server=1 --max-concurrent-downloads=1 --log=aria2c.log >NUL 2>&1", "r");
                             pclose($handle);
                             return getAria2cDaemonStatus();
                             break;
@@ -228,7 +236,17 @@
                 ["dir" => DOWNLOAD_DIRECTORY]
             );
             if($result["id"] == 1) {
-                array_push($generatedGids, $result["result"]);
+                $gid = $result["result"];
+
+                if(($gidArray = file(GID_FILE, FILE_IGNORE_NEW_LINES)) === FALSE ) {
+                    throw new GidFileProcessingException("Failed in reading GID file");
+                }
+                array_push($gidArray, $gid);
+                if(file_put_contents(GID_FILE, implode(PHP_EOL,$gidArray)) === false) {
+                    throw new GidFileProcessingException("Failed to write to GID file");
+                }
+
+                array_push($generatedGids, $gid);
             }
         }
 
@@ -239,4 +257,42 @@
         global $aria2c;
         return $aria2c->tellActive();
     }
+
+    function tellWaiting() {
+        global $aria2c;
+        return $aria2c->tellWaiting(0, 1000);
+    }
+
+    function getFileDownloadUrl($url) {
+        preg_match("/(^.*)\.(.*?)$/", $url, $matches);
+        $fileName = $matches[1];
+        $extension = $matches[2];
+        $downloadUrl = "<a href='/downloadLogFile.php?logFileName=$fileName&fileType=$extension'>$url<a/>";
+        return $downloadUrl;
+    }
+
+    function tellStatus() {
+        global $aria2c;
+        $versionInfo = $aria2c->getVersion();
+
+        $statusArray = [ "id" => $versionInfo["id"], "jsonrpc" => $versionInfo["jsonrpc"], "result" => [] ];
+
+        if(($gidArray = file(GID_FILE, FILE_IGNORE_NEW_LINES)) === FALSE ) {
+            throw new GidFileProcessingException("Failed in reading GID file");
+        }
+
+        foreach($gidArray as $gid) {
+            $status = $aria2c->tellStatus($gid);
+            if(!empty($status["result"]["files"])) {
+                preg_match("/[^\/]+$/", $status["result"]["files"][0]["path"], $matches);
+                $status["result"]["fileName"] = empty($matches) ? "" : getFileDownloadUrl($matches[0]);
+            }
+            
+            $statusArray["result"][] = $status["result"];
+        }
+
+
+        return $statusArray;
+    }
+
 ?>
