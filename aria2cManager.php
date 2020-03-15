@@ -52,7 +52,7 @@
                             } else {
                                 $status = "Aria2c daemon started with PID, $aria2cStartDaemonStatus successfully";
                             }
-                            return sendData(getResponse($status));
+                            return sendData(getResponse($status, getGlobalOptions()));
                             break;
                     case STOP_DAEMON:
                             $aria2cStopDaemonStatus = stopAria2cDaemon();
@@ -117,13 +117,17 @@
         throw new InvalidArgumentException("One or more URI fails validation");
     }
 
-    function getResponse($responseText) {
-        return [
+    function getResponse($responseText, $globalOption = null) {
+        $response = [
             "timestamp" => getTimestamp(),
             "statusCode" => 200,
             "status" => "success",
             "response" => $responseText
         ];
+        if ($globalOption != null) {
+            return $response + [ "globalOption" => $globalOption ];
+        }
+        return $response;
     }
 
     function startAria2cDaemon() {
@@ -131,18 +135,19 @@
         if($aria2cDaemonStatus !== -1) {
             return -2;
         }
+        
+        //create a gid if not exists
+        if(file_exists(GID_FILE)) {
+            unlink(GID_FILE);
+        }
+        if(!touch(GID_FILE)) {
+            throw new GidFileProcessingException("Error in creating file " . GID_FILE);
+        }
+
         switch(PHP_OS) {
             case "WIN32":
             case "WINNT":
             case "Windows":
-                            //create a gid if not exists
-                            if(file_exists(GID_FILE)) {
-                                unlink(GID_FILE);
-                            }
-                            if(!touch(GID_FILE)) {
-                                throw new GidFileProcessingException("Error in creating file " . GID_FILE);
-                            }
-
                             //start script for windows
                             $handle = popen("START /B aria2c.exe --enable-rpc --rpc-listen-all --max-connection-per-server=1 --max-concurrent-downloads=1 --log=aria2c.log >NUL 2>&1", "r");
                             pclose($handle);
@@ -154,7 +159,8 @@
             case "Unix":
             case "Linux":
                             //start script for Unix/Linux
-                            echo "Unix/Linux type OS";
+                            shell_exec("nohup ./aria2c --enable-rpc --rpc-listen-all --max-connection-per-server=1 --max-concurrent-downloads=1 --log=aria2c.log > /dev/null 2>&1 &");
+                            return getAria2cDaemonStatus();
                             break;
             default:    
         }
@@ -182,7 +188,8 @@
             case "Unix":
             case "Linux":
                             //stop script for Unix/Linux
-                            echo "Unix/Linux type OS";
+                            exec("kill -9 $aria2cDaemonStatus > /dev/null 2>&1");
+                            return getAria2cDaemonStatus();
                             break;
             default:    
         }
@@ -208,9 +215,18 @@
             case "Unix":
             case "Linux":
                             //start script for Unix/Linux
-                            echo "Unix/Linux type OS";
+                            $pids = array();
+                            exec("ps -ef | grep aria2c | grep -v grep | awk '{print $2}'", $pids);
+                            if(empty($pids) === false) {
+                                return $pids[0]; //return pid of the running process
+                            } else {
+                                return -1; //daemon not started
+                            }
                             break;
-            default:    
+            default:        
+                            //start script for other OS versions
+                            return -255; //Unsupported operation right now
+                            break;
         }
     }
 
@@ -293,6 +309,30 @@
 
 
         return $statusArray;
+    }
+
+    function getGlobalOptions() {
+        global $aria2c;
+        $globalOption = $aria2c->getGlobalOption();
+        
+        return [
+            "allow-overwrite" => $globalOption["result"]["allow-overwrite"],
+            "always-resume" => $globalOption["result"]["always-resume"],
+            "check-integrity" => $globalOption["result"]["check-integrity"],
+            "disable-ipv6" => $globalOption["result"]["disable-ipv6"],
+            "disk-cache" => $globalOption["result"]["disk-cache"],
+            "log-level" => $globalOption["result"]["log-level"],
+            "max-concurrent-downloads" => $globalOption["result"]["max-concurrent-downloads"],
+            "max-connection-per-server" => $globalOption["result"]["max-connection-per-server"],
+            "max-download-limit" => $globalOption["result"]["max-download-limit"],
+            "max-download-result" => $globalOption["result"]["max-download-result"],
+            "max-overall-download-limit" => $globalOption["result"]["max-overall-download-limit"],
+            "max-overall-upload-limit" => $globalOption["result"]["max-overall-upload-limit"],
+            "max-resume-failure-tries" => $globalOption["result"]["max-resume-failure-tries"],
+            "max-tries" => $globalOption["result"]["max-tries"],
+            "max-upload-limit" => $globalOption["result"]["max-upload-limit"],
+            "min-split-size" => $globalOption["result"]["min-split-size"]
+        ];
     }
 
 ?>

@@ -12,6 +12,7 @@ const BASE_URI = "http://localhost/Aria2c-PHP-webui";
 
 const ABSOLUTE_RESOURCE_PATH = BASE_URI + "/aria2cManager.php";
 
+let daemonStatusCheckInterval = 0;
 let activeDownloadInterval = 0;
 let waitingDownloadInterval = 0;
 let completedOrFinishedDownloadInterval = 0;
@@ -53,17 +54,16 @@ $(document).ready(function () {
     $("#activeDownloadsSegment").hide();
     $("#waitingDownloadsSegment").hide();
     $("#completedOrFinishedDownloadsSegment").hide();
+    clearInterval(daemonStatusCheckInterval); activeDownloadInterval = 0;
     clearInterval(activeDownloadInterval); activeDownloadInterval = 0;
     clearInterval(waitingDownloadInterval); waitingDownloadInterval = 0;
     clearInterval(completedOrFinishedDownloadInterval); completedOrFinishedDownloadInterval = 0;
     if (segmentName != "") {
       $("#" + segmentName).show();
       if (segmentName === "appStatusSegment") {
-        $("#dimmer").toggleState();
         appStatus(true);
-      }else{
-        $("#dimmer").toggleState();
       }
+      $("#dimmer").toggleState();
     }
   }
 
@@ -85,10 +85,26 @@ $(document).ready(function () {
       $("#startStopDaemon").addBtnClass("negative");
       $("#startStopDaemonText").text("Stop");
       $("#aria2cOperations").show();
+      let isFirstTimeStatus = true;
+      if (daemonStatusCheckInterval === 0) {
+        daemonStatusCheckInterval = setInterval(() => {
+          if (isFirstTimeStatus) {
+            $("#dimmer").toggleState();
+            isFirstTimeStatus = false;
+            appStatus(true);
+          } else {
+            appStatus();
+          }
+        }, 60000);
+      }
     } else {
       $("#startStopDaemon").addBtnClass("positive");
       $("#startStopDaemonText").text("Start");
       $("#aria2cOperations").hide();
+      clearInterval(daemonStatusCheckInterval); activeDownloadInterval = 0;
+      clearInterval(activeDownloadInterval); activeDownloadInterval = 0;
+      clearInterval(waitingDownloadInterval); waitingDownloadInterval = 0;
+      clearInterval(completedOrFinishedDownloadInterval); completedOrFinishedDownloadInterval = 0;
     }
 
     if (isToggleDimmerState) {
@@ -328,6 +344,8 @@ $(document).ready(function () {
       case "Menu": console.log("Menu clicked");
         break;
       case "Home": console.log("Home clicked"); showSegment("appStatusSegment");
+        let isFirstTimeStatus = true;
+        appStatus(true);
         break;
       case "Active Downloads": console.log("Active Downloads clicked"); showSegment("activeDownloadsSegment");
         let isFirstTimeActive =  true;
