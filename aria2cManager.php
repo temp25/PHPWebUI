@@ -69,7 +69,11 @@
                     case DAEMON_STATUS:
                             $aria2cDaemonStatus = getAria2cDaemonStatus();
                             $status = $aria2cDaemonStatus === -1 ? "Aria2c daemon not running" : "Aria2c daemon running with PID, $aria2cDaemonStatus";
-                            return sendData(getResponse($status));
+                            if ($aria2cDaemonStatus === -1) {
+                                return sendData(getResponse($status));
+                            } else {
+                                return sendData(getResponse($status, getGlobalOptions()));
+                            }
                             break;
                     case GLOBAL_STATISTICS:
                         //get global statistics
@@ -90,7 +94,9 @@
                         return sendData(getResponse(tellWaiting()));
                     case TELL_STATUS:
                         return sendData(getResponse(tellStatus()));
-
+                    case SET_GLOBAL_STATUS:
+                        return sendData(getResponse(setGlobalOption($_POST)));
+                        break;
                     default:
                         throw new UnsupportedRequestTypeException("Request type '$requestType' is not supported");
                         break;
@@ -333,6 +339,11 @@
             "max-upload-limit" => $globalOption["result"]["max-upload-limit"],
             "min-split-size" => $globalOption["result"]["min-split-size"]
         ];
+    }
+
+    function setGlobalOption($options) {
+        global $aria2c;
+        return $aria2c->changeGlobalOption($options);
     }
 
 ?>

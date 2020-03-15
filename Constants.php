@@ -9,4 +9,5 @@
     define("TELL_ACTIVE", "tellActive");
     define("TELL_WAITING", "tellWaiting");
     define("TELL_STATUS", "tellStatus");
+    define("SET_GLOBAL_STATUS", "setGlobalOption");
 ?>

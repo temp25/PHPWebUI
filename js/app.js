@@ -123,6 +123,46 @@ $(document).ready(function () {
         let response = data.response;
         populateAppStatus(response, isToggleDimmerState);
 
+        if(data.hasOwnProperty("globalOption")) {
+          if (data.globalOption["allow-overwrite"] === "true") {
+            $("#allowOverwrite").attr("checked", "checked");
+          } else {
+            $("#allowOverwrite").removeAttr("checked");
+          }
+
+          if (data.globalOption["always-resume"] === "true") {
+            $("#alwaysResume").attr("checked", "checked");
+          } else {
+            $("#alwaysResume").removeAttr("checked");
+          }
+
+          if (data.globalOption["check-integrity"] === "true") {
+            $("#checkIntegrity").attr("checked", "checked");
+          } else {
+            $("#checkIntegrity").removeAttr("checked");
+          }
+
+          if (data.globalOption["disable-ipv6"] === "true") {
+            $("#disableIPv6").attr("checked", "checked");
+          } else {
+            $("#disableIPv6").removeAttr("checked");
+          }
+
+          $("#logLevel").val(data.globalOption["log-level"]);
+
+          $("#diskCache").val(parseInt(data.globalOption["disk-cache"]));
+          $("#maxConcurrentDownloads").val(parseInt(data.globalOption["max-concurrent-downloads"]));
+          $("#maxConnectionPerServer").val(parseInt(data.globalOption["max-connection-per-server"]));
+          $("#maxDownloadLimit").val(parseInt(data.globalOption["max-download-limit"]));
+          $("#maxDownloadResult").val(parseInt(data.globalOption["max-download-result"]));
+          $("#maxOverallDownloadLimit").val(parseInt(data.globalOption["max-overall-download-limit"]));
+          $("#maxOverallUploadLlimit").val(parseInt(data.globalOption["max-overall-upload-limit"]));
+          $("#maxResumeFailureTries").val(parseInt(data.globalOption["max-resume-failure-tries"]));
+          $("#maxTries").val(parseInt(data.globalOption["max-tries"]));
+          $("#maxUploadLimit").val(parseInt(data.globalOption["max-upload-limit"]));
+          $("#minSplitSize").val(parseInt(data.globalOption["min-split-size"]));
+        }
+
       },
       "json"
     );
@@ -445,6 +485,93 @@ $(document).ready(function () {
 
   $("#downloadAria2cLog").click(function (e) {
     window.location.href = BASE_URI + "/downloadLogFile.php?logFileName=aria2c&fileType=log"
+  });
+
+  $("#updateGlobalSettings").click(function (e) {
+    
+    let allowOverwrite = ($("#allowOverwrite").attr("checked") == "checked") ? "true" : "flase";
+    let alwaysResume = ($("#alwaysResume").attr("checked") == "checked") ? "true" : "flase";
+    let checkIntegrity = ($("#checkIntegrity").attr("checked") == "checked") ? "true" : "flase";
+    let disableIPv6 = ($("#disableIPv6").attr("checked") == "checked") ? "true" : "flase";
+    let logLevel = $("#logLevel").val();
+    let diskCache = $("#diskCache").val();
+    let maxConcurrentDownloads = $("#maxConcurrentDownloads").val();
+    let maxConnectionPerServer = $("#maxConnectionPerServer").val();
+    let maxDownloadLimit = $("#maxDownloadLimit").val();
+    let maxDownloadResult = $("#maxDownloadResult").val();
+    let maxOverallDownloadLimit = $("#maxOverallDownloadLimit").val();
+    let maxOverallUploadLlimit = $("#maxOverallUploadLlimit").val();
+    let maxResumeFailureTries = $("#maxResumeFailureTries").val();
+    let maxTries = $("#maxTries").val();
+    let maxUploadLimit = $("#maxUploadLimit").val();
+    let minSplitSize = $("#minSplitSize").val();
+
+    // console.log(
+    //   "allowOverwrite: " + allowOverwrite + "\n" +
+    //   "alwaysResume: " + alwaysResume + "\n" +
+    //   "checkIntegrity: " + checkIntegrity + "\n" +
+    //   "disableIPv6: " + disableIPv6 + "\n" +
+    //   "logLevel: " + logLevel + "\n" +
+    //   "diskCache: " + diskCache + "\n" +
+    //   "maxConcurrentDownloads: " + maxConcurrentDownloads + "\n" +
+    //   "maxConnectionPerServer: " + maxConnectionPerServer + "\n" +
+    //   "maxDownloadLimit: " + maxDownloadLimit + "\n" +
+    //   "maxDownloadResult: " + maxDownloadResult + "\n" +
+    //   "maxOverallDownloadLimit: " + maxOverallDownloadLimit + "\n" +
+    //   "maxOverallUploadLlimit: " + maxOverallUploadLlimit + "\n" +
+    //   "maxResumeFailureTries: " + maxResumeFailureTries + "\n" +
+    //   "maxTries: " + maxTries + "\n" +
+    //   "maxUploadLimit: " + maxUploadLimit + "\n" +
+    //   "minSplitSize: " + minSplitSize
+    // );
+
+    let modifiedGlobalOptions = {
+      "requestType": "setGlobalOption",
+      "allow-overwrite": allowOverwrite,
+      "always-resume": alwaysResume,
+      "check-integrity": checkIntegrity,
+      "disable-ipv6": disableIPv6,
+      "disk-cache": diskCache,
+      "log-level": logLevel,
+      "max-concurrent-downloads": maxConcurrentDownloads,
+      "max-connection-per-server": maxConnectionPerServer,
+      "max-download-limit": maxDownloadLimit,
+      "max-download-result": maxDownloadResult,
+      "max-overall-download-limit": maxOverallDownloadLimit,
+      "max-overall-upload-limit": maxOverallUploadLlimit,
+      "max-resume-failure-tries": maxResumeFailureTries,
+      "max-tries": maxTries,
+      "max-upload-limit": maxUploadLimit,
+      "min-split-size": minSplitSize
+    };
+
+    //console.log("modifiedGlobalOptions : ");
+    //console.log(modifiedGlobalOptions)
+
+    $(this).toggleClass("loading");
+    $(this).addClass("disabled", "disabled");
+
+    $.post(ABSOLUTE_RESOURCE_PATH, modifiedGlobalOptions,
+      function (data, textStatus, jqXHR) {
+        
+        $("#updateGlobalSettings").toggleClass("loading");
+        $("#updateGlobalSettings").text("Updated");
+
+        setTimeout(() => {
+          $("#updateGlobalSettings").text("Update");
+          $("#updateGlobalSettings").removeClass("disabled");
+        }, 3000);
+
+        if (data.statusCode === 200) {
+          showToast("success", "Updated settings successfully");
+        } else {
+          showToast("error", data.errorMessage);
+        }
+
+      },
+      "json"
+    );
+
   });
 
 });

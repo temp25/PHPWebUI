@@ -68,6 +68,134 @@
                                     Download aria2c log
                                 </button>
                             </p>
+                            <p>
+                                <table class="ui very basic collapsing celled table">
+                                    <thead>
+                                        <th>Aria2c Global setting fields</th>
+                                        <th>Values</th>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>allow-overwrite</td>
+                                            <td>
+                                                <div class="ui fitted slider checkbox">
+                                                    <input id="allowOverwrite" name="allowOverwrite" type="checkbox"><label></label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>always-resume</td>
+                                            <td>
+                                                <div class="ui fitted slider checkbox">
+                                                    <input id="alwaysResume" name="alwaysResume" type="checkbox" checked="checked"><label></label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>check-integrity</td>
+                                            <td>
+                                                <div class="ui fitted slider checkbox">
+                                                    <input id="checkIntegrity" name="checkIntegrity" type="checkbox" ><label></label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>disable-ipv6</td>
+                                            <td>
+                                                <div class="ui fitted slider checkbox">
+                                                    <input id="disableIPv6" name="disableIPv6" type="checkbox" ><label></label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>disk-cache</td>
+                                            <td>
+                                                <input id="diskCache" type="number" value="16777216" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>log-level</td>
+                                            <!-- debug, info, notice, error -->
+                                            <td>
+                                                <select id="logLevel" class="ui dropdown">
+                                                    <option value="info">info</option>
+                                                    <option value="debug">debug</option>
+                                                    <option value="notice">notice</option>
+                                                    <option value="error">error</option>
+                                                </select>
+
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>max-concurrent-downloads</td>
+                                            <td>
+                                                <input id="maxConcurrentDownloads" type="number" value="1" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>max-connection-per-server</td>
+                                            <td>
+                                                <input id="maxConnectionPerServer" type="number" value="1" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>max-download-limit</td>
+                                            <td>
+                                                <input id="maxDownloadLimit" type="number" value="0" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>max-download-result</td>
+                                            <td>
+                                                <input id="maxDownloadResult" type="number" value="1000" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>max-overall-download-limit</td>
+                                            <td>
+                                                <input id="maxOverallDownloadLimit" type="number" value="0" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>max-overall-upload-limit</td>
+                                            <td>
+                                                <input id="maxOverallUploadLlimit" type="number" value="0" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>max-resume-failure-tries</td>
+                                            <td>
+                                                <input id="maxResumeFailureTries" type="number" value="0" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>max-tries</td>
+                                            <td>
+                                                <input id="maxTries" type="number" value="5" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>max-upload-limit</td>
+                                            <td>
+                                                <input id="maxUploadLimit" type="number" value="0" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>min-split-size</td>
+                                            <td>
+                                                <input id="minSplitSize" type="number" value="20971520" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="2" style="text-align: center;">
+                                                <button id="updateGlobalSettings" class="ui primary button">Update</button>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </p>
                         </div>
                     </p>
                 </div>
