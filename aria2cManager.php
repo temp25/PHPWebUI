@@ -41,7 +41,6 @@
             if(isset($requestType)) {
                 
                 switch ($requestType) {
-                    //TODO: Add aria2c daemon start and stop logic here
                     case START_DAEMON:
                             $aria2cStartDaemonStatus = startAria2cDaemon();
                             $status = "";
@@ -168,7 +167,10 @@
                             shell_exec("nohup ./aria2c --enable-rpc --rpc-listen-all --max-connection-per-server=1 --max-concurrent-downloads=1 --log=aria2c.log > /dev/null 2>&1 &");
                             return getAria2cDaemonStatus();
                             break;
-            default:    
+            default:        
+                            //start script for other OS versions
+                            return -255; //Unsupported OS right now
+                            break;
         }
     }
 
@@ -197,7 +199,10 @@
                             exec("kill -9 $aria2cDaemonStatus > /dev/null 2>&1");
                             return getAria2cDaemonStatus();
                             break;
-            default:    
+            default:        
+                            //stop script for other OS versions
+                            return -255; //Unsupported OS right now
+                            break;
         }
     }
 
@@ -230,8 +235,8 @@
                             }
                             break;
             default:        
-                            //start script for other OS versions
-                            return -255; //Unsupported operation right now
+                            //status check script for other OS versions
+                            return -255; //Unsupported OS right now
                             break;
         }
     }
